@@ -13,9 +13,9 @@ sudo node main.js
 
 ## Troubleshooting
 ### Bluetooth is not discoverable
-    * Run ` hciconfig -a` and check BD Address.
-    * If BD Address shows "AA:AA:AA...", blenz bluetooth kernel is incorrectly installed.
-    * Follow [this link](https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=138908)
+   Run ` hciconfig -a` and check BD Address.
+   If BD Address shows "AA:AA:AA...", blenz bluetooth kernel is incorrectly installed.
+   Follow [this link](https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=138908)
 
 ## Copyright
 NoStress 2017
