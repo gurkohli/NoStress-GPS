@@ -3,6 +3,8 @@ Prereq:
 Install Docker CE
 https://docs.docker.com/engine/installation/
 
+docker pull klokantech/tileserver-gl
+
 Use:
 
 cd server/
