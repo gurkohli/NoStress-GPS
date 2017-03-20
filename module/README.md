@@ -2,7 +2,7 @@
 
 ## The following modules exist:
 * bluetooth
-* maps (coming-soon)
+* maps
 
 Check README inside each module for their instructions.
 
