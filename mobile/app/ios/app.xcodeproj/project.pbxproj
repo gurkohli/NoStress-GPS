@@ -36,7 +36,7 @@
 		2DCD954D1E0B4F2C00145EB5 /* appTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* appTests.m */; };
 		5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
-		A9372C3C1E70957F0056175E /* libBleManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A99A994F1E6F8E23003BDC9B /* libBleManager.a */; };
+		A9B4DD791E80541E002315B0 /* libBleManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A9B4DD781E805411002315B0 /* libBleManager.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -229,7 +229,7 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
-		A99A994E1E6F8E23003BDC9B /* PBXContainerItemProxy */ = {
+		A9B4DD771E805411002315B0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A99A994A1E6F8E22003BDC9B /* BleManager.xcodeproj */;
 			proxyType = 2;
@@ -263,7 +263,7 @@
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
-		A99A994A1E6F8E22003BDC9B /* BleManager.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BleManager.xcodeproj; path = "/Users/gurkohli/Git/NoStress-GPS-Mobile/app/node_modules/react-native/Libraries/WebSocket/../../../react-native-ble-manager/ios/BleManager.xcodeproj"; sourceTree = "<absolute>"; };
+		A99A994A1E6F8E22003BDC9B /* BleManager.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BleManager.xcodeproj; path = "/Users/gurkohli/Git/NoStress-GPS/mobile/app/node_modules/react-native-ble-manager/ios/BleManager.xcodeproj"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -279,7 +279,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A9372C3C1E70957F0056175E /* libBleManager.a in Frameworks */,
+				A9B4DD791E80541E002315B0 /* libBleManager.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
 				5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */,
 				00C302E51ABCBA2D00DB3ED1 /* libRCTActionSheet.a in Frameworks */,
@@ -494,10 +494,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A99A994B1E6F8E22003BDC9B /* Products */ = {
+		A9B4DD741E805410002315B0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A99A994F1E6F8E23003BDC9B /* libBleManager.a */,
+				A9B4DD781E805411002315B0 /* libBleManager.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -618,7 +618,7 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = A99A994B1E6F8E22003BDC9B /* Products */;
+					ProductGroup = A9B4DD741E805410002315B0 /* Products */;
 					ProjectRef = A99A994A1E6F8E22003BDC9B /* BleManager.xcodeproj */;
 				},
 				{
@@ -852,11 +852,11 @@
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		A99A994F1E6F8E23003BDC9B /* libBleManager.a */ = {
+		A9B4DD781E805411002315B0 /* libBleManager.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libBleManager.a;
-			remoteRef = A99A994E1E6F8E23003BDC9B /* PBXContainerItemProxy */;
+			remoteRef = A9B4DD771E805411002315B0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
