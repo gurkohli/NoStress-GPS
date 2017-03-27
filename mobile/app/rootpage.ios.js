@@ -14,17 +14,31 @@ import {
   Switch
 } from 'react-native';
 import BleManager from 'react-native-ble-manager';
+import API from './common/API.js'
+
+var base64 = require('base64-js');
 
 export default class RootPage extends Component {
   constructor(props) {
     super(props)
-
+    this._ROUTINGSERVICE = "routing"
+    this._ROUTINGSERVICEDATA = "data"
+    this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
+    this._moduleName = "raspberrypi"
+    this._moduleServices = {
+        routing: {
+          uuid:   "526F7574-696E-6753-6572-76696365FFFF", //"RoutingService" in hex + 'ffff'
+          characteristics: {
+            data: "526F7574-696E-6753-6572-766963654331" //"RoutingServiceC1" in hex
+          }
+        }
+    }
     this.openSettingsView = this.openSettingsView.bind(this)
     this.updateSettings = this.updateSettings.bind(this)
+    this.APIService = new API()
 
     this.state = {
-      ble: null,
-      scanning: false,
+      blePeripheralInfo: {},
       destinationInputValue: '',
       programmableButtons: [
         {isActive: true, value: null}, // Set true for testing. TODO Change to false
@@ -33,7 +47,7 @@ export default class RootPage extends Component {
         {isActive: false, value: null},
         {isActive: false, value: null}
       ],
-      bleConnectionStatus: 2, //0: Not Connected, 1: Connecting, 2: Connected
+      bleConnectionStatus: 0, //0: Not Connected, 1: Connecting, 2: Connected
       isSettingsModalVisible: false, // Setting true for testing.
       settings: [
         {text: "Display Units", value: 0, options: ["km", "miles"], optionsLength: 2},
@@ -60,15 +74,66 @@ export default class RootPage extends Component {
         }
       ]
     }
+
   }
 
-  // componentDidMount() {
-  //   BleManager.start({showAlert: false})
-  //   this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
-  //
-  //   NativeAppEventEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
-  // }
-  //
+  connectToModule() {
+    BleManager.isPeripheralConnected(this._moduleIdentifier, [])
+      .then((isConnected) => {
+        if (isConnected) {
+          this.setState({bleConnectionStatus: 2})
+        } else {
+          this.setState({bleConnectionStatus: 0})
+          BleManager.scan([], 10, true).then(()=>console.debug("Scan Started"))
+        }
+      })
+  }
+
+  writeToModule(serviceName, characteristicName, data) {
+    if (this.state.bleConnectionStatus == 2) {
+      var service = this._moduleServices[serviceName]
+      if (service && service.characteristics[characteristicName]) {
+        data = JSON.stringify(data);
+        var data_b64 = base64.fromByteArray(data)
+        var characteristicUUID = service.characteristics[characteristicName]
+        return BleManager.write(
+          this._moduleIdentifier,
+          service.uuid,
+          characteristicUUID,
+          data_b64,
+          base64.byteLength(data_b64)
+        ).then((response)=>console.log(response))
+        .catch((error)=>console.log(error));
+      }
+    }
+  }
+
+  componentDidMount() {
+    // showAlert: iOS only. Shows alert if bluetooth is off.
+    BleManager.start({showAlert: true}).then(()=>console.debug("Ble Initialized"))
+    this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
+
+    NativeAppEventEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+  }
+
+  handleDiscoverPeripheral(data) {
+    if (data.id == this._moduleIdentifier || data.name == this._moduleName) {
+      BleManager.stopScan()
+      this.setState({bleConnectionStatus: 1});
+      BleManager.connect(this._moduleIdentifier)
+          .then((peripheralInfo)=>{
+            this.setState({bleConnectionStatus: 2, blePeripheralInfo: peripheralInfo})
+            console.log(peripheralInfo)
+          })
+          .catch((error)=>{
+            console.log(error);
+            this.setState({bleConnectionStatus: 0})
+          })
+    }
+    console.log('Got ble data', data);
+    this.setState({ble: data})
+  }
+
   // handleScan() {
   //   BleManager.scan([], 30, true).then((results) => {
   //     console.log('Scanning', results);
@@ -97,17 +162,27 @@ export default class RootPage extends Component {
   closeSettingsView() {
     this.setState({isSettingsModalVisible: false});
   }
-  destinationEntered(value) {
-
+  destinationEntered() {
+    this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{console.log(response)}).catch((error)=>{console.log(error)})
+    var source=["-122.9177736","49.276745"];
+    var destination = ["-122.9794553","49.2799697"];
+    var routes;
+    this.APIService.findFastestRoute(source, destination).then((response)=>{
+      console.log(response)
+      this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, response.routes[0])
+    }).catch((error)=>console.error(error))
   }
 
   handleProgrammableButtonClicked(index) {
-
-  }
-
-  handleDiscoverPeripheral(data) {
-    console.log('Got ble data', data);
-    this.setState({ble: data})
+    // Testing only!
+    if (this.state.bleConnectionStatus == 0) {
+      this.connectToModule()
+    } else {
+      BleManager.disconnect(this._moduleIdentifier)
+        .then(()=>{
+          this.setState({bleConnectionStatus: 0})
+        })
+    }
   }
 
   updateSettings(index, value) {
@@ -145,10 +220,10 @@ export default class RootPage extends Component {
           borderColor: 'black'
         }
       })
-      return <TouchableOpacity key={index} onPress={this.handleProgrammableButtonClicked} style ={nodeStyle.programmableButton}>
+      return <TouchableOpacity key={index} onPress={() => this.handleProgrammableButtonClicked()} style ={nodeStyle.programmableButton}>
               <Image source={require('./assets/images/button.png')} style={nodeStyle.programmableButtonIcon}/>
             </TouchableOpacity>
-    });
+    }.bind(this));
 
     var statusLabel = function() {
       var textColor, textValue
@@ -270,8 +345,8 @@ export default class RootPage extends Component {
           </TouchableOpacity>
         </View>
         <View style={styles.main}>
-          <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} onEndEditing={(text)=>this.destinationEntered(text)} style={styles.destinationInput} value={this.state.destinationInputValue}/>
-          <TouchableOpacity onPress={this.openSettingsView} style ={styles.goButton}>
+          <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} onEndEditing={()=>this.destinationEntered()} style={styles.destinationInput} value={this.state.destinationInputValue}/>
+          <TouchableOpacity onPress={()=>this.destinationEntered()} style ={styles.goButton}>
             <Image source={require('./assets/images/go.png')} style={styles.goIcon}/>
           </TouchableOpacity>
           <View style={styles.programmableButtonsView}>
