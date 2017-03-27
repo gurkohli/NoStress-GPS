@@ -1,0 +1,84 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "tileserver-gl-styles@1.1.0",
+        "scope": null,
+        "escapedName": "tileserver-gl-styles",
+        "name": "tileserver-gl-styles",
+        "rawSpec": "1.1.0",
+        "spec": "1.1.0",
+        "type": "version"
+      },
+      "/Users/gurkohli/Git/NoStress-GPS/module/maps/node_modules/tileserver-gl-light"
+    ]
+  ],
+  "_from": "tileserver-gl-styles@1.1.0",
+  "_id": "tileserver-gl-styles@1.1.0",
+  "_inCache": true,
+  "_location": "/tileserver-gl-styles",
+  "_nodeVersion": "4.4.3",
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/tileserver-gl-styles-1.1.0.tgz_1484682418882_0.6577897879760712"
+  },
+  "_npmUser": {
+    "name": "petrsloup",
+    "email": "petr.sloup@klokantech.com"
+  },
+  "_npmVersion": "2.15.1",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "tileserver-gl-styles@1.1.0",
+    "scope": null,
+    "escapedName": "tileserver-gl-styles",
+    "name": "tileserver-gl-styles",
+    "rawSpec": "1.1.0",
+    "spec": "1.1.0",
+    "type": "version"
+  },
+  "_requiredBy": [
+    "/tileserver-gl-light"
+  ],
+  "_resolved": "https://registry.npmjs.org/tileserver-gl-styles/-/tileserver-gl-styles-1.1.0.tgz",
+  "_shasum": "769b7457b4206960b22aef875557566c7b55fd1f",
+  "_shrinkwrap": null,
+  "_spec": "tileserver-gl-styles@1.1.0",
+  "_where": "/Users/gurkohli/Git/NoStress-GPS/module/maps/node_modules/tileserver-gl-light",
+  "authors": [
+    "Petr Pridal <petr.pridal@klokantech.com>",
+    "Petr Sloup <petr.sloup@klokantech.com>"
+  ],
+  "bugs": {
+    "url": "https://github.com/klokantech/tileserver-gl-styles/issues"
+  },
+  "dependencies": {},
+  "description": "Default styles for TileServer-GL",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "769b7457b4206960b22aef875557566c7b55fd1f",
+    "tarball": "https://registry.npmjs.org/tileserver-gl-styles/-/tileserver-gl-styles-1.1.0.tgz"
+  },
+  "gitHead": "2c9b5fce0ca62a18222d3695b6bc02f70f69b42e",
+  "homepage": "https://github.com/klokantech/tileserver-gl-styles#readme",
+  "maintainers": [
+    {
+      "name": "klokan",
+      "email": "petr.pridal@klokantech.com"
+    },
+    {
+      "name": "petrsloup",
+      "email": "petr.sloup@klokantech.com"
+    }
+  ],
+  "name": "tileserver-gl-styles",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klokantech/tileserver-gl-styles.git"
+  },
+  "scripts": {},
+  "version": "1.1.0"
+}

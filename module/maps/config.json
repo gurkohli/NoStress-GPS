@@ -1,0 +1,15 @@
+{
+  "options": {
+    "paths": {
+      "root": "",
+      "mbtiles": "",
+      "styles": "",
+      "fonts": ""
+    }
+  },
+  "data": {
+    "v3": {
+      "mbtiles": "vancouver_canada.mbtiles"
+    }
+  }
+}
