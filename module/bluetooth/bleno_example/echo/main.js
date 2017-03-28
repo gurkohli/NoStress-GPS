@@ -10,7 +10,7 @@ bleno.on('stateChange', function(state) {
   console.log('on -> stateChange: ' + state);
 
   if (state === 'poweredOn') {
-    bleno.startAdvertising('echo', ['ec00']);
+    bleno.startAdvertising('NoStress GPS', ['ec00']);
   } else {
     bleno.stopAdvertising();
   }
@@ -22,7 +22,7 @@ bleno.on('advertisingStart', function(error) {
   if (!error) {
     bleno.setServices([
       new BlenoPrimaryService({
-        uuid: 'ec00',
+        uuid: '526f7574696e6753657276696365ffff',
         characteristics: [
           new EchoCharacteristic()
         ]
