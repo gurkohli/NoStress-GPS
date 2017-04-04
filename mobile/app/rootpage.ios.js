@@ -11,12 +11,13 @@ import {
   View,
   Image,
   SegmentedControlIOS,
-  Switch
+  Switch,
+  Keyboard
 } from 'react-native';
 import BleManager from 'react-native-ble-manager';
 import API from './common/API.js'
 
-var base64 = require('base64-js');
+var base64 = require('base-64');
 
 export default class RootPage extends Component {
   constructor(props) {
@@ -93,15 +94,15 @@ export default class RootPage extends Component {
     if (this.state.bleConnectionStatus == 2) {
       var service = this._moduleServices[serviceName]
       if (service && service.characteristics[characteristicName]) {
-        data = JSON.stringify(data);
-        var data_b64 = base64.fromByteArray(data)
+        data = data.constructor == String ? data : JSON.stringify(data);
+        var data_b64 = base64.encode(data)
         var characteristicUUID = service.characteristics[characteristicName]
         return BleManager.write(
           this._moduleIdentifier,
           service.uuid,
           characteristicUUID,
           data_b64,
-          base64.byteLength(data_b64)
+          data_b64.length
         ).then((response)=>console.log(response))
         .catch((error)=>console.log(error));
       }
@@ -163,14 +164,19 @@ export default class RootPage extends Component {
     this.setState({isSettingsModalVisible: false});
   }
   destinationEntered() {
-    this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{console.log(response)}).catch((error)=>{console.log(error)})
-    var source=["-122.9177736","49.276745"];
-    var destination = ["-122.9794553","49.2799697"];
-    var routes;
-    this.APIService.findFastestRoute(source, destination).then((response)=>{
+    this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{
       console.log(response)
-      this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, response.routes[0])
-    }).catch((error)=>console.error(error))
+      var source=["-122.9177736","49.276745"];
+      var destination = [response[0].lon, response[0].lat]//["-122.9794553","49.2799697"];
+      var routes;
+      this.APIService.findFastestRoute(source, destination).then((response)=>{
+        console.log(response)
+        this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, response.routes[0])
+      }).catch((error)=>console.error(error))
+    }).catch((error)=>{
+      console.log(error)
+    })
+
   }
 
   handleProgrammableButtonClicked(index) {
@@ -337,33 +343,42 @@ export default class RootPage extends Component {
       return entry
     }.bind(this))
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Image source={require('./assets/images/logo.png')} style={styles.logo}/>
-          <TouchableOpacity onPress={this.openSettingsView} style ={styles.settingsButton}>
-            <Image source={require('./assets/images/cog.png')} style={styles.settingsIcon}/>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.main}>
-          <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} onEndEditing={()=>this.destinationEntered()} style={styles.destinationInput} value={this.state.destinationInputValue}/>
-          <TouchableOpacity onPress={()=>this.destinationEntered()} style ={styles.goButton}>
-            <Image source={require('./assets/images/go.png')} style={styles.goIcon}/>
-          </TouchableOpacity>
-          <View style={styles.programmableButtonsView}>
-            {programmableButtonNodes}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Image source={require('./assets/images/logo.png')} style={styles.logo}/>
+            <TouchableOpacity onPress={this.openSettingsView} style ={styles.settingsButton}>
+              <View style={styles.settingsBorder}>
+                <Image source={require('./assets/images/cog_blue.png')} style={styles.settingsIcon}/>
+              </View>
+            </TouchableOpacity>
           </View>
-          {statusLabel()}
-        </View>
-        <Modal
-          animationType={"fade"}
-          transparent={true}
-          visible={this.state.isSettingsModalVisible}>
-            <View style={styles.settingsModal}>
-              <View style={styles.pad15}></View>
-              {settingsOptions}
+          <View style={styles.main}>
+            <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} onEndEditing={()=>this.destinationEntered()} style={styles.destinationInput} value={this.state.destinationInputValue}/>
+            <TouchableOpacity onPress={()=>this.destinationEntered()} style ={styles.goButton}>
+              <Image source={require('./assets/images/go.png')} style={styles.goIcon}/>
+            </TouchableOpacity>
+            {statusLabel()}
+            <View style={{padding:5}}></View>
+            <View style={styles.programmableButtonsView}>
+              {programmableButtonNodes}
             </View>
-        </Modal>
-      </View>
+          </View>
+          <Modal
+            animationType={"fade"}
+            transparent={true}
+            visible={this.state.isSettingsModalVisible}>
+            <TouchableOpacity style={styles.containerTransparent} onPress={()=>this.setState({isSettingsModalVisible: false})}>
+              <TouchableWithoutFeedback>
+                <View style={styles.settingsModal}>
+                  <Text style={styles.settingsModalLabel}>Settings</Text>
+                  {settingsOptions}
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </Modal>
+        </View>
+      </TouchableWithoutFeedback>
       // <View style={styles.container}>
       //   <TouchableHighlight style={{padding:20, backgroundColor:'#ccc'}} onPress={() => this.toggleScanning(!this.state.scanning) }>
       //       <Text>Scan Bluetooth ({this.state.scanning ? 'on' : 'off'})</Text>
@@ -389,6 +404,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center'
   },
+  containerTransparent: {
+    height: '100%',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0)',
+    justifyContent: 'center'
+  },
   main: {
     height: '80%',
     width: '90%',
@@ -410,16 +431,24 @@ const styles = StyleSheet.create({
     resizeMode: 'contain'
   },
   settingsButton: {
-    marginLeft: 30,
+    marginLeft: 15,
     paddingTop: '12%',
     width: '10%',
-    height: '100%',
     justifyContent: 'center',
+  },
+  settingsBorder: {
+    borderWidth: 1,
+    borderRadius: 15,
+    backgroundColor: 'white',
+    height: 30,
+    width: 30,
+    justifyContent: 'center'
   },
   settingsIcon: {
     resizeMode: 'contain',
-    borderRadius: 12,
-    width: '70%'
+    alignSelf: 'center',
+    width: 18,
+    height: 18,
   },
   destinationInput: {
     width: '80%',
@@ -457,14 +486,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   settingsModal: {
-    top: '18.5%',
-    left: '5%',
-    height: '80%',
-    width: '90%',
+    top: '25%',
+    left: '0%',
+    width: '100%',
+    bottom: 0,
     position: 'absolute',
     backgroundColor: '#0088cc',
     alignItems: 'center',
     flex: 1
+  },
+  settingsModalLabel: {
+    fontSize: 25,
+    fontWeight: '300',
+    color: 'white',
+    textAlign: 'center'
   },
   settingsModalItem: {
     width: '90%',

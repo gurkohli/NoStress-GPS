@@ -37,7 +37,7 @@ export default class API {
       destination: destination.join(","),
       steps: options.steps || 'true',
       geometries: options.geometries || 'geojson',
-      overview: options.overview || 'full',
+      overview: options.overview || 'simplified',//'full',
       alternatives: options.alternatives || 'false'
     }
     var URL = ROUTE_API + "";
