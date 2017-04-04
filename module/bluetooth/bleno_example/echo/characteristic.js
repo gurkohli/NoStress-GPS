@@ -1,10 +1,11 @@
 var util = require('util');
 
-var bleno = require('bleno');
+var base64 = require('base64-js');
 
+var bleno = require('bleno');
 var BlenoCharacteristic = bleno.Characteristic;
 
-var EchoCharacteristic = function() {
+var EchoCharacteristic = function(callback) {
   EchoCharacteristic.super_.call(this, {
     uuid: '526f7574696e67536572766963654331',
     properties: ['read', 'write', 'notify'],
@@ -12,7 +13,7 @@ var EchoCharacteristic = function() {
   });
 
   this._value = new Buffer(0);
-  this._updateValueCallback = null;
+  this._updateValueCallback = callback;
 };
 
 util.inherits(EchoCharacteristic, BlenoCharacteristic);
@@ -24,29 +25,17 @@ EchoCharacteristic.prototype.onReadRequest = function(offset, callback) {
 };
 
 EchoCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResponse, callback) {
-  this._value = data;
+  this._value = data
 
   console.log('EchoCharacteristic - onWriteRequest: value = ' + this._value.toString('hex'));
 
   if (this._updateValueCallback) {
     console.log('EchoCharacteristic - onWriteRequest: notifying');
 
-    this._updateValueCallback(this._value);
+    this._updateValueCallback(this._value.toString('hex'));
   }
 
   callback(this.RESULT_SUCCESS);
-};
-
-EchoCharacteristic.prototype.onSubscribe = function(maxValueSize, updateValueCallback) {
-  console.log('EchoCharacteristic - onSubscribe');
-
-  this._updateValueCallback = updateValueCallback;
-};
-
-EchoCharacteristic.prototype.onUnsubscribe = function() {
-  console.log('EchoCharacteristic - onUnsubscribe');
-
-  this._updateValueCallback = null;
 };
 
 module.exports = EchoCharacteristic;

@@ -3,13 +3,23 @@
     "paths": {
       "root": "",
       "mbtiles": "",
-      "styles": "",
-      "fonts": ""
+      "styles": "styles",
+      "fonts": "fonts"
+    },
+    "formatQuality" : {
+	"pngQuantization": false,
+	"png": 60
+    }
+  },
+  "styles" : {
+    "nostress": {
+	"style":"basic.json",
+	"serve_rendered": true
     }
   },
   "data": {
     "v3": {
-      "mbtiles": "vancouver_canada.mbtiles"
+      "mbtiles": "canada.mbtiles"
     }
   }
 }
