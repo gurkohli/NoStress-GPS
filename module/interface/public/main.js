@@ -12,12 +12,10 @@ var routingLayer = L.geoJSON().addTo(map)
 var isFirstData = true;
 
 socket.on('routing', function(data) {
-	console.log(hex2a(data))
-	var parsedData = JSON.parse(data);
-	if (parsedData.geometry) {
+	if (data.geometry) {
 		var geoJSONFeature = {
 			"type": "Feature",
-			"geometry": parsedData.geometry
+			"geometry": data.geometry
 		}
 		if (!isFirstData) {
 			routingLayer.clearLayers()
@@ -26,12 +24,3 @@ socket.on('routing', function(data) {
 		routingLayer.addData(geoJSONFeature)
 	}
 });
-
-
-function hex2a(hexx) {
-	var hex = hexx.toString();
-	var str = '';
-	for (var i=0; i<hex.length; i+=2)
-		str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-	return str;
-}

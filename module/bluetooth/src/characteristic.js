@@ -33,10 +33,10 @@ EchoCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResp
   if (data.toString('hex') == PAYLOAD_END) {
     var payload = this._packetArray.join("");
     payload = pako.inflate(hex2a(payload), {to:'string', level: 9})
-    console.log('\n','\n',payload)
+    //console.log('\n','\n',payload)
 
     if (this._updateValueCallback) {
-      this._updateValueCallback(this._value.toString('hex'));
+      this._updateValueCallback(payload);
     }
 
     this._packetArray = [];

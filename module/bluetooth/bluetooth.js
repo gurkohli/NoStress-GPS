@@ -1,42 +1,31 @@
-const express = require('express');
-const app = express();
-const http = require('http').Server(app);
-const io =  require('socket.io')(http);
-const port = 3000;
-
+var request = require('request');
 var bleno = require('bleno');
 
 var BlenoPrimaryService = bleno.PrimaryService;
 
-var EchoCharacteristic = require('./characteristic');
-
-var isConnected  = false;
-var client = null;
-
-app.use(express.static(__dirname + '/public'));
-
-// WebSocket
-
-function onConnection(socket) {
- 	isConnected = true;
-	client = socket
-}
-
-io.on('connection', onConnection);
+var EchoCharacteristic = require('./src/characteristic');
 
 
 // Callbacks
 
 function routingCallback(data) {
-	if (isConnected && client) {
-		client.emit('routing', data);
-	}
-	return 
+  request({
+    url: "http://localhost:3000/routing",
+    method: "POST",
+    json: true,
+    headers: {
+        "content-type": "application/json",
+    },
+    body: JSON.parse(data)
+  }, function(err, response, body) {
+    console.log(body)
+  })
+  console.log("Sending POST data to Interface")
 }
 
 // Main
 
-console.log('bleno - echo');
+console.log("Starting Bluetooth Module");
 
 bleno.on('stateChange', function(state) {
   console.log('on -> stateChange: ' + state);
@@ -60,7 +49,5 @@ bleno.on('advertisingStart', function(error) {
         ]
       })
     ]);
-
-	http.listen(port, () => console.log('Listening on port ' + port));
   }
 });
