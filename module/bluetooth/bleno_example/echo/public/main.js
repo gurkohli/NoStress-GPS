@@ -13,11 +13,11 @@ var isFirstData = true;
 
 socket.on('routing', function(data) {
 	console.log(hex2a(data))
-	var parsedData = JSON.parse(hex2a(data));
+	var parsedData = JSON.parse(data);
 	if (parsedData.geometry) {
 		var geoJSONFeature = {
 			"type": "Feature",
-			"geometry": parsedData.geometry		
+			"geometry": parsedData.geometry
 		}
 		if (!isFirstData) {
 			routingLayer.clearLayers()

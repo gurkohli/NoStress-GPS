@@ -19,12 +19,17 @@ import API from './common/API.js'
 
 var base64 = require('base-64');
 
+var pako = require('pako');
+
+var PAYLOAD_END = "FFFFFFFF";
+
 export default class RootPage extends Component {
   constructor(props) {
     super(props)
     this._ROUTINGSERVICE = "routing"
     this._ROUTINGSERVICEDATA = "data"
-    this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
+    //this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
+    this._moduleIdentifier = "3A85A35E-419E-EC6A-C1C2-E9EEBEB19A7A" // Macbook
     this._moduleName = "raspberrypi"
     this._moduleServices = {
         routing: {
@@ -95,19 +100,33 @@ export default class RootPage extends Component {
       var service = this._moduleServices[serviceName]
       if (service && service.characteristics[characteristicName]) {
         data = data.constructor == String ? data : JSON.stringify(data);
-        var data_b64 = base64.encode(data)
+        var data_compressed = pako.deflate(data, {to: 'string', level: 9})
+        var data_b64 = base64.encode(data_compressed)
         var characteristicUUID = service.characteristics[characteristicName]
         return BleManager.write(
           this._moduleIdentifier,
           service.uuid,
           characteristicUUID,
           data_b64,
-          data_b64.length
-        ).then((response)=>console.log(response))
+          512
+        ).then((response)=>{
+          console.log(response);
+
+          BleManager.write(
+            this._moduleIdentifier,
+            service.uuid,
+            characteristicUUID,
+            PAYLOAD_END,
+            10
+          ).then((response)=> {
+            console.log(response)
+          }).catch((error)=>console.log(error))
+        })
         .catch((error)=>console.log(error));
       }
     }
   }
+
 
   componentDidMount() {
     // showAlert: iOS only. Shows alert if bluetooth is off.

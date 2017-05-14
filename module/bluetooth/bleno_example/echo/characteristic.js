@@ -1,9 +1,9 @@
 var util = require('util');
-
-var base64 = require('base64-js');
-
 var bleno = require('bleno');
+var pako = require('pako');
 var BlenoCharacteristic = bleno.Characteristic;
+
+var PAYLOAD_END = "145145145145";
 
 var EchoCharacteristic = function(callback) {
   EchoCharacteristic.super_.call(this, {
@@ -13,6 +13,7 @@ var EchoCharacteristic = function(callback) {
   });
 
   this._value = new Buffer(0);
+  this._packetArray = [];
   this._updateValueCallback = callback;
 };
 
@@ -29,13 +30,30 @@ EchoCharacteristic.prototype.onWriteRequest = function(data, offset, withoutResp
 
   console.log('EchoCharacteristic - onWriteRequest: value = ' + this._value.toString('hex'));
 
-  if (this._updateValueCallback) {
-    console.log('EchoCharacteristic - onWriteRequest: notifying');
+  if (data.toString('hex') == PAYLOAD_END) {
+    var payload = this._packetArray.join("");
+    payload = pako.inflate(hex2a(payload), {to:'string', level: 9})
+    console.log('\n','\n',payload)
 
-    this._updateValueCallback(this._value.toString('hex'));
+    if (this._updateValueCallback) {
+      this._updateValueCallback(this._value.toString('hex'));
+    }
+
+    this._packetArray = [];
+  } else {
+    this._packetArray.push(data.toString('hex'));
   }
+
 
   callback(this.RESULT_SUCCESS);
 };
+
+function hex2a(hexx) {
+	var hex = hexx.toString();
+	var str = '';
+	for (var i=0; i<hex.length; i+=2)
+		str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	return str;
+}
 
 module.exports = EchoCharacteristic;

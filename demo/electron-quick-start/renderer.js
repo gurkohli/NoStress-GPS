@@ -18,33 +18,35 @@ var mobileCSS = {
   hiddenHeight: 0
 }
 
-var isDemoEnabled = true
+var isLiveDemoOn = false
 
-function disableMaps() {
+function hideVideo() {
   maps.style.height = mapsCSS.hiddenHeight
 }
 
-function enableMaps() {
+function showVideo() {
   maps.style.height = mapsCSS.visibleHeight
 }
 
-function disableMobile() {
+function hideMobilePhoto() {
   mobile.style.height = mobileCSS.hiddenHeight
 }
 
-function enableMobile() {
+function showMobilePhoto() {
   mobile.style.height = mobileCSS.visibleHeight
 }
 
 ipcRenderer.on('demo-toggle', ()=> {
-  if (isDemoEnabled) {
-    disableMobile()
-    disableMaps()
-    isDemoEnabled = false;
+  if (isLiveDemoOn) {
+    //It's on. Turn it off
+    showVideo()
+    showMobilePhoto()
+    isLiveDemoOn = false;
   } else {
-    enableMobile()
-    enableMaps()
-    isDemoEnabled = true;
+    //It's off. Turn it on
+    hideVideo()
+    hideMobilePhoto()
+    isLiveDemoOn = true;
   }
 })
 console.log(maps, mobile, mapsCSS)
