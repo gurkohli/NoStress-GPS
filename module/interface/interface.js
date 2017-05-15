@@ -21,8 +21,29 @@ app.post('/routing', function(req, res) {
   console.log("Recieved POST from Routing")
   res.send("ACK")
 })
+ 
+app.post('/gps', function(req, res) {
+  var data = req.body;
+  if (isConnected && client)
+  {
+  	data = [ parseFloat(data[0]), parseFloat(data[1]) ];
+  	console.log(data);
+    client.emit('gps', data);
+  }
+  console.log("Recieved POST from GPS")
+  res.send("ACK")
+})
 
-
+app.post('/acc', function(req, res) {
+  var data = req.body;
+  if (isConnected && client) 
+  {
+  	//console.log(data.data);
+    client.emit('acc', data.data);
+  }
+  console.log("Recieved POST from acc")
+  res.send("ACK")
+})
 
 
 // WebSocket
