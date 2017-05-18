@@ -10,12 +10,12 @@
     "openmaptiles:mapbox:source:url": "mapbox://openmaptiles.4qljc88t"
   },
   "center": [
-    8.54806714892635,
-    47.37180823552663
+    -122.95,
+    49.26
   ],
   "zoom": 12.241790506353492,
   "bearing": 0,
-  "pitch": 0,
+  "pitch": 60,
   "sources": {
     "openmaptiles": {
       "type": "vector",
