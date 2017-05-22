@@ -15,7 +15,7 @@
   ],
   "zoom": 12.241790506353492,
   "bearing": 0,
-  "pitch": 60,
+  "pitch": 0,
   "sources": {
     "openmaptiles": {
       "type": "vector",
