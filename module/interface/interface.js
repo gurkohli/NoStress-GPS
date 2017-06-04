@@ -27,7 +27,7 @@ app.post('/gps', function(req, res) {
   if (isConnected && client)
   {
   	data = [ parseFloat(data[0]), parseFloat(data[1]) ];
-  	console.log(data);
+  	//console.log(data);
     client.emit('gps', data);
   }
   console.log("Recieved POST from GPS")
@@ -45,6 +45,17 @@ app.post('/acc', function(req, res) {
   res.send("ACK")
 })
 
+app.post('/mag', function(req, res) {
+  var data = req.body;
+  if (isConnected && client) 
+  {
+  	console.log(data);
+  	data = [ parseInt(data[0]), parseInt(data[1]) ];
+    client.emit('mag', data);
+  }
+  console.log("Recieved POST from Mag")
+  res.send("ACK")
+})
 
 // WebSocket
 

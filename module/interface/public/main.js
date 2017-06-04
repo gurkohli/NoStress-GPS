@@ -6,6 +6,8 @@ const ZOOM_LEVEL_FAST = 16;
 
  // variable to update current zoom level on next map ren
 var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
+var pitchAngle = 0;
+var bearingAngle = 0;
 
 var map = new mapboxgl.Map({
     container: 'map', // container id
@@ -45,15 +47,23 @@ socket.on('routing', function(data) {
 
 // GPS sensor handle
 //var counter = 10;
+
+socket.on('mag', function(data) {
+	pitchAngle = data[0];
+	bearingAngle = data[1]; 
+});
+
+
 socket.on('gps', function(data) {
 
 	map.removeLayer("point");// clear previous marker
-	map.removeSource("point"); 
-
+	map.removeSource("point");
 	updateLocator(data[1], data[0]); // update current position
 	map.flyTo({ 
 			center: [data[1], data[0]],  // updates view and centers your position
-			zoom: zoomLevelGlobal
+			zoom: zoomLevelGlobal,
+			pitch: pitchAngle,
+    		bearing: bearingAngle
 		});
 	// counter--;
 	// if(counter==0) // update the View of the map not everytime but periodically
