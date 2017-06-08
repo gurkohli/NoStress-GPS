@@ -1,17 +1,44 @@
-<html>
+<html ng-app="NoStressInterface">
 <head>
 	<meta charset="UTF-8">
 	<title> NoStress </title>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css' rel='stylesheet' />
 	<style>
 		body {margin: 0, padding: 0}
+		#overlay {text-align: center;}
 		#map {position: absolute; top:0; bottom:0; width: 100%}
+		#eta {width: 150px; height: 70px; left: 5%; top: 5%; position: absolute; background-color: blue;}
+
+		#lane-container {width: 100%; height: 50px; bottom: 15%; position: absolute; display: flex; justify-content: center}
+		#lanes {width: 200px; height: 70px; position: absolute; background-color: blue;}
+
+		#street-name-container {width: 100%; height: 50px; bottom: calc(15% - 90px); position: absolute; display: flex; justify-content: center}
+		#street-name {width: 200px; height: 40px; position: absolute; background-color: brown;}
+
+		#next-turn-container {width: 200px; height: 70px; right: 5%; top: 5%; position: absolute;}
+		#next-turn-direction {width: 40%; height: 100%; float:left; background-color: brown;}
+		#next-turn-details-container{width: 60%; height: 100%; float:right;}
+		#next-turn-distance {width: 100%; height: 50%; background-color: blue;}
+		#next-turn-street-name {width: 100%; height: 50%; background-color: green;}
 	</style>
 </head>
-<body>
+<body ng-controller="InterfaceController">
 	<div id='map'></div>
+	<div id="overlay">
+		<div id='eta'>{{ETA}}</div>
+		<div id="lane-container"><div id="lanes">Lane information</div></div>
+		<div id="street-name-container"><div id="street-name">{{currentStreetName}}</div></div>
+		<div id="next-turn-container">
+				<div id="next-turn-direction">Direction of turn</div>
+				<div id="next-turn-details-container">
+						<div id="next-turn-distance">{{nextTurnDistance}}</div>
+						<div id="next-turn-street-name">{{nextTurnStreet}}</div>
 
+				</div>
+		</div>
+	</div>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="main.js"></script>
 
