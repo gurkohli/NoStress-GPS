@@ -20,7 +20,7 @@ app.post('/routing', function(req, res) {
   var data = req.body;
   if (data.source != undefined && data.destination != undefined) {
     var points = [data.source, data.destination];
-    interfaceHelper.getRoutes(points, function(err, res, body) {
+    interfaceHelper.getRoute(points, function(err, response, body) {
 	if (!err && res.statusCode == 200) {
 	  if (isConnected && client) {
             client.emit('routing', body);

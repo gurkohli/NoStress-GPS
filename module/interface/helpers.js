@@ -4,7 +4,7 @@ var Helper = function() {
    this.routingURL = "http://localhost:8989/route";
 };
 
-Helper.prototype.getRouting = function(points, callback) {
+Helper.prototype.getRoute = function(points, callback) {
 
   var options = {
 	url: this.routingURL,

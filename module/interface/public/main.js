@@ -1,4 +1,5 @@
 var app = angular.module("NoStressInterface",[])
+var socket = io()
 
 app.controller("InterfaceController", function InterfaceController($scope) {
 
@@ -31,16 +32,26 @@ var bearingAngle = 0;
   	loadLocatorImage(); // load GPS symbol
   	updateLocator(0,0); // spawn start point
 
+<<<<<<< cce466ec3135a698c30fca0e42d0a1b860be29be
   	loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
     
   });
   var socket = io();
+=======
+  	//loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
+      //loadLocatorImage(); // load GPS symbol
+      //updateLocator(-123.10, 49.2811); // spawn start point
+
+  });
+
+>>>>>>> Added script to run all services at once and keep track of them
   //var routingLayer = L.geoJSON().addTo(map)
   var isFirstData = true;
 
   map.addControl( new mapboxgl.NavigationControl());
   // // BLE handle
   socket.on('routing', function(data) {
+	console.log(data)
   	if (data.geometry) {
   		var geoJSONFeature = {
   			"type": "Feature",
