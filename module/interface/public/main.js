@@ -7,14 +7,10 @@ app.controller("InterfaceController", function InterfaceController($scope) {
   $scope.currentStreetName = "Current Street Name";
   $scope.nextTurnDistance = "Distance to Next Turn";
   $scope.nextTurnStreet = "Next Turn Street Name";
-
-
-
   // var RASPI_HOST = 'http://localhost:8080'
   // var tileURL = RASPI_HOST + '/styles/nostress/rendered/{z}/{x}/{y}.png'
   const ZOOM_LEVEL_SLOW = 18;
-  const ZOOM_LEVEL_MED = 17;
-  const ZOOM_LEVEL_FAST = 16;
+  const ZOOM_LEVEL_FAST = 17;
 
    // variable to update current zoom level on next map ren
   var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
@@ -24,19 +20,20 @@ var bearingAngle = 0;
   var map = new mapboxgl.Map({
       container: 'map', // container id
       style: 'http://localhost:8080/styles/nostress.json', //stylesheet location
-      center: [-123.10, 49.2811], // starting position
-      zoom: zoomLevelGlobal // starting zoom
+      center: [0,0], // starting position
+      zoom: zoomLevelGlobal, // starting zoom
+      pitch: pitchAngle,
+      bearing: bearingAngle
   });
 
   map.on('load', function () {
 
+  	loadLocatorImage(); // load GPS symbol
+  	updateLocator(0,0); // spawn start point
 
   	loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
-      loadLocatorImage(); // load GPS symbol
-      updateLocator(-123.10, 49.2811); // spawn start point
-
+    
   });
-
   var socket = io();
   //var routingLayer = L.geoJSON().addTo(map)
   var isFirstData = true;
@@ -61,7 +58,7 @@ var bearingAngle = 0;
   //var counter = 10;
 
   socket.on('mag', function(data) {
-  	  pitchAngle = data[0];
+  	  pitchAngle = data[0]; // we can hardcode pitch=60
 	  bearingAngle = data[1]; 
   });
 
@@ -75,15 +72,8 @@ var bearingAngle = 0;
 		center: [data[1], data[0]],  // updates view and centers your position
 		zoom: zoomLevelGlobal,
 		pitch: pitchAngle,
-    		bearing: bearingAngle
-  		});
-  	// counter--;
-  	// if(counter==0) // update the View of the map not everytime but periodically
-  	// {
-
-  	// 	counter=10;
-  	// }
-
+    	bearing: bearingAngle
+  	});
   });
 
   socket.on('acc', function(data) {
@@ -125,15 +115,15 @@ var bearingAngle = 0;
       });
   }
 
-  function loadLocatorImage()
+  function loadLocatorImage() // function to load image TODO: load from localhost
   {
-  	map.loadImage('https://upload.wikimedia.org/wikipedia/commons/a/ad/Gradeas_dick.png', (error, image) => {
+  	map.loadImage('https://cdn3.iconfinder.com/data/icons/internet-and-web-4/78/internt_web_technology-08-512.png', (error, image) => {
       if (error) throw error;
       map.addImage('flag', image);
    	});
   }
 
-  function updateLocator(long, lat)
+  function updateLocator(long, lat) // function to move gps point
   {
   	map.addLayer({
               "id": "point",
@@ -153,7 +143,7 @@ var bearingAngle = 0;
               },
               "layout": {
                   "icon-image": "flag",
-                  "icon-size": 0.5
+                  "icon-size": 0.1
               }
           });
   }
