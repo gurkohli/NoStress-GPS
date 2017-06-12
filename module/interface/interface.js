@@ -37,13 +37,11 @@ app.post('/routing', function(req, res) {
     res.send("BAD DATA")
   }
 })
- 
+
 app.post('/gps', function(req, res) {
   var data = req.body;
   if (isConnected && client)
   {
-  	data = [ parseFloat(data[0]), parseFloat(data[1]) ];
-  	//console.log(data);
     client.emit('gps', data);
   }
   console.log("Recieved POST from GPS")

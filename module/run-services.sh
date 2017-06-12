@@ -74,17 +74,32 @@ echo
 echo "Module Loaded"
 
 
+# Run GPS
+sudo killall gpsd
+sudo gpsd /dev/ttyS0 -F /var/run/gpsd.sock
+
+cd ../GPS
+mate-terminal -e "sudo python pyserial.py"
+
+until pgrep -f "sudo python pyserial.py"
+do
+   sleep 0.1
+done
+
+PID_GPS=$(pgrep -f "sudo python pyserial.py")
+
 function kill_everything {
 	echo "Terminating!!"
 	sudo kill $PID_BLUETOOTH
 	sudo kill $PID_MAPS
 	sudo kill $PID_ROUTING
 	sudo kill $PID_INTERFACE
+	sudo kill $PID_GPS 
 }
 
 trap kill_everything SIGHUP SIGINT SIGTERM
 
-while (sudo kill -0 $PID_BLUETOOTH && sudo kill -0 $PID_MAPS && sudo kill -0 $PID_ROUTING && sudo kill -0 $PID_INTERFACE)
+while (sudo kill -0 $PID_BLUETOOTH && sudo kill -0 $PID_MAPS && sudo kill -0 $PID_ROUTING && sudo kill -0 $PID_INTERFACE && sudo kill -0 $PID_GPS)
 do
 	sleep 1
 done

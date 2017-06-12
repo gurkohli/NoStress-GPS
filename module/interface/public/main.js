@@ -1,5 +1,6 @@
 var app = angular.module("NoStressInterface",[])
 var socket = io()
+var currentRoute;
 
 app.controller("InterfaceController", function InterfaceController($scope) {
 
@@ -17,11 +18,12 @@ app.controller("InterfaceController", function InterfaceController($scope) {
   var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
   var pitchAngle = 0;
   var bearingAngle = 0;
+ 
 
   var map = new mapboxgl.Map({
       container: 'map', // container id
-      style: 'http://localhost:8080/styles/nostress.json', //stylesheet location
-      center: [0,0], // starting position
+      style: 'http://192.168.0.5:8080/styles/nostress.json', //stylesheet location
+      center: [-123.10, 49.2811], // starting position
       zoom: zoomLevelGlobal, // starting zoom
       pitch: pitchAngle,
       bearing: bearingAngle
@@ -30,24 +32,17 @@ app.controller("InterfaceController", function InterfaceController($scope) {
   map.on('load', function () {
 
   	loadLocatorImage(); // load GPS symbol
-  	updateLocator(0,0); // spawn start point
+  	updateLocator(-123.10,49.2811); // spawn start point
+  	loadPath({type: "LineString", coordinates: [ [-123.10, 49.2811], [-123.00, 49.2811] ]}); // for testing purposes
 
-<<<<<<< cce466ec3135a698c30fca0e42d0a1b860be29be
-  	loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
-    
   });
   var socket = io();
-=======
-  	//loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
-      //loadLocatorImage(); // load GPS symbol
-      //updateLocator(-123.10, 49.2811); // spawn start point
-
-  });
 
   map.addControl( new mapboxgl.NavigationControl());
   // // BLE handle
   socket.on('routing', function(data) {
 	console.log(data)
+	currentRoute = data;
 	var path = data.paths[0];
 	var points = path.points
   	if (points) {
@@ -67,14 +62,12 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
   socket.on('gps', function(data) {
 
-  	map.removeLayer("point");// clear previous marker
-	map.removeSource("point"); 
-  	updateLocator(data[1], data[0]); // update current position
+   	updateLocator(data[0], data[1]); // update current position
   	map.flyTo({
-		center: [data[1], data[0]],  // updates view and centers your position
+		center: [data[0], data[1]],  // updates view and centers your position
 		zoom: zoomLevelGlobal,
 		pitch: pitchAngle,
-    	bearing: bearingAngle
+    		bearing: bearingAngle
   	});
   });
 
@@ -131,8 +124,15 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
   function updateLocator(long, lat) // function to move gps point
   {
+        var id = "locator";
+        if (map.getLayer(id) != undefined) {
+                map.removeLayer(id);
+        }
+        if (map.getSource(id) != undefined) {
+                map.removeSource(id);
+        }
   	map.addLayer({
-              "id": "point",
+              "id": id,
               "type": "symbol",
               "source": {
                   "type": "geojson",
