@@ -15,8 +15,8 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
    // variable to update current zoom level on next map ren
   var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
-var pitchAngle = 0;
-var bearingAngle = 0;
+  var pitchAngle = 0;
+  var bearingAngle = 0;
 
   var map = new mapboxgl.Map({
       container: 'map', // container id
@@ -44,24 +44,15 @@ var bearingAngle = 0;
 
   });
 
->>>>>>> Added script to run all services at once and keep track of them
-  //var routingLayer = L.geoJSON().addTo(map)
-  var isFirstData = true;
-
   map.addControl( new mapboxgl.NavigationControl());
   // // BLE handle
   socket.on('routing', function(data) {
 	console.log(data)
-  	if (data.geometry) {
-  		var geoJSONFeature = {
-  			"type": "Feature",
-  			"geometry": data.geometry
-  		}
-  		if (!isFirstData) {
-  			routingLayer.clearLayers()
-  		}
-  		isFirstData = false;
-  		loadPath(geoJSONFeature);
+	var path = data.paths[0];
+	var points = path.points
+  	if (points) {
+//		updateLocator(path.snapped_waypoints.coordinates[0][0], path.snapped_waypoints.coordinates[0][1]);
+  		loadPath(points);
   	}
   });
 
@@ -101,18 +92,22 @@ var bearingAngle = 0;
 
   function loadPath(data)
   {
+	var id = "route";
+	if (map.getLayer(id) != undefined) {
+		map.removeLayer(id);
+	}
+	if (map.getSource(id) != undefined) {
+		map.removeSource(id);
+	}
   	map.addLayer({
-          "id": "route",
+          "id": id,
           "type": "line",
           "source": {
               "type": "geojson",
               "data": {
                   "type": "Feature",
                   "properties": {},
-                  "geometry": {
-                      "type": "LineString",
-                      "coordinates": data
-                  }
+                  "geometry": data
               }
           },
           "layout": {

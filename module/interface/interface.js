@@ -18,12 +18,13 @@ app.use(bodyParser.json())
 
 app.post('/routing', function(req, res) {
   var data = req.body;
+  console.log(data)
   if (data.source != undefined && data.destination != undefined) {
     var points = [data.source, data.destination];
     interfaceHelper.getRoute(points, function(err, response, body) {
 	if (!err && res.statusCode == 200) {
 	  if (isConnected && client) {
-            client.emit('routing', body);
+            client.emit('routing', JSON.parse(body));
 	  }
      	  console.log("Recieved POST from Routing")
           res.send("SUCCESS")

@@ -15,16 +15,22 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
    // variable to update current zoom level on next map ren
   var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
-var pitchAngle = 0;
-var bearingAngle = 0;
+  var pitchAngle = 0;
+  var bearingAngle = 0;
 
   var map = new mapboxgl.Map({
       container: 'map', // container id
+<<<<<<< c1993958000aacf0989552afc4877ed893b2112f
       style: 'http://localhost:8080/styles/nostress.json', //stylesheet location
       center: [0,0], // starting position
       zoom: zoomLevelGlobal, // starting zoom
       pitch: pitchAngle,
       bearing: bearingAngle
+=======
+      style: 'http://192.168.0.3:8080/styles/nostress.json', //stylesheet location
+      center: [-123.10, 49.2811], // starting position
+      zoom: zoomLevelGlobal // starting zoom
+>>>>>>> Integration of routing engine with interface: Commit 1.
   });
 
   map.on('load', function () {
@@ -44,24 +50,22 @@ var bearingAngle = 0;
 
   });
 
+<<<<<<< c1993958000aacf0989552afc4877ed893b2112f
 >>>>>>> Added script to run all services at once and keep track of them
   //var routingLayer = L.geoJSON().addTo(map)
   var isFirstData = true;
 
+=======
+>>>>>>> Integration of routing engine with interface: Commit 1.
   map.addControl( new mapboxgl.NavigationControl());
   // // BLE handle
   socket.on('routing', function(data) {
 	console.log(data)
-  	if (data.geometry) {
-  		var geoJSONFeature = {
-  			"type": "Feature",
-  			"geometry": data.geometry
-  		}
-  		if (!isFirstData) {
-  			routingLayer.clearLayers()
-  		}
-  		isFirstData = false;
-  		loadPath(geoJSONFeature);
+	var path = data.paths[0];
+	var points = path.points
+  	if (points) {
+//		updateLocator(path.snapped_waypoints.coordinates[0][0], path.snapped_waypoints.coordinates[0][1]);
+  		loadPath(points);
   	}
   });
 
@@ -101,18 +105,22 @@ var bearingAngle = 0;
 
   function loadPath(data)
   {
+	var id = "route";
+	if (map.getLayer(id) != undefined) {
+		map.removeLayer(id);
+	}
+	if (map.getSource(id) != undefined) {
+		map.removeSource(id);
+	}
   	map.addLayer({
-          "id": "route",
+          "id": id,
           "type": "line",
           "source": {
               "type": "geojson",
               "data": {
                   "type": "Feature",
                   "properties": {},
-                  "geometry": {
-                      "type": "LineString",
-                      "coordinates": data
-                  }
+                  "geometry": data
               }
           },
           "layout": {
