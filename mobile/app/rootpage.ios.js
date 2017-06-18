@@ -28,8 +28,8 @@ export default class RootPage extends Component {
     super(props)
     this._ROUTINGSERVICE = "routing"
     this._ROUTINGSERVICEDATA = "data"
-    //this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
-    this._moduleIdentifier = "3A85A35E-419E-EC6A-C1C2-E9EEBEB19A7A" // Macbook
+    this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
+    //this._moduleIdentifier = "3A85A35E-419E-EC6A-C1C2-E9EEBEB19A7A" // Macbook
     this._moduleName = "raspberrypi"
     this._moduleServices = {
         routing: {
@@ -185,13 +185,10 @@ export default class RootPage extends Component {
   destinationEntered() {
     this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{
       console.log(response)
-      var source=["-122.9177736","49.276745"];
-      var destination = [response[0].lon, response[0].lat]//["-122.9794553","49.2799697"];
+      var source=["49.276745","-122.9177736"];
+      var destination = [response[0].lat, response[0].lon];
       var routes;
-      this.APIService.findFastestRoute(source, destination).then((response)=>{
-        console.log(response)
-        this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, response.routes[0])
-      }).catch((error)=>console.error(error))
+      this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, {source: source, destination: destination})
     }).catch((error)=>{
       console.log(error)
     })
