@@ -1,4 +1,6 @@
 var app = angular.module("NoStressInterface",[])
+var socket = io()
+var currentRoute;
 
 app.controller("InterfaceController", function InterfaceController($scope) {
 
@@ -14,13 +16,14 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
    // variable to update current zoom level on next map ren
   var zoomLevelGlobal = ZOOM_LEVEL_SLOW;
-var pitchAngle = 0;
-var bearingAngle = 0;
+  var pitchAngle = 0;
+  var bearingAngle = 0;
+ 
 
   var map = new mapboxgl.Map({
       container: 'map', // container id
-      style: 'http://localhost:8080/styles/nostress.json', //stylesheet location
-      center: [0,0], // starting position
+      style: 'http://192.168.0.5:8080/styles/nostress.json', //stylesheet location
+      center: [-123.10, 49.2811], // starting position
       zoom: zoomLevelGlobal, // starting zoom
       pitch: pitchAngle,
       bearing: bearingAngle
@@ -29,28 +32,22 @@ var bearingAngle = 0;
   map.on('load', function () {
 
   	loadLocatorImage(); // load GPS symbol
-  	updateLocator(0,0); // spawn start point
+  	updateLocator(-123.10,49.2811); // spawn start point
+  	loadPath({type: "LineString", coordinates: [ [-123.10, 49.2811], [-123.00, 49.2811] ]}); // for testing purposes
 
-  	loadPath([ [-123.10, 49.2811], [-123.00, 49.2811] ]); // for testing purposes
-    
   });
   var socket = io();
-  //var routingLayer = L.geoJSON().addTo(map)
-  var isFirstData = true;
 
   map.addControl( new mapboxgl.NavigationControl());
   // // BLE handle
   socket.on('routing', function(data) {
-  	if (data.geometry) {
-  		var geoJSONFeature = {
-  			"type": "Feature",
-  			"geometry": data.geometry
-  		}
-  		if (!isFirstData) {
-  			routingLayer.clearLayers()
-  		}
-  		isFirstData = false;
-  		loadPath(geoJSONFeature);
+	console.log(data)
+	currentRoute = data;
+	var path = data.paths[0];
+	var points = path.points
+  	if (points) {
+//		updateLocator(path.snapped_waypoints.coordinates[0][0], path.snapped_waypoints.coordinates[0][1]);
+  		loadPath(points);
   	}
   });
 
@@ -65,14 +62,12 @@ var bearingAngle = 0;
 
   socket.on('gps', function(data) {
 
-  	map.removeLayer("point");// clear previous marker
-	map.removeSource("point"); 
-  	updateLocator(data[1], data[0]); // update current position
+   	updateLocator(data[0], data[1]); // update current position
   	map.flyTo({
-		center: [data[1], data[0]],  // updates view and centers your position
+		center: [data[0], data[1]],  // updates view and centers your position
 		zoom: zoomLevelGlobal,
 		pitch: pitchAngle,
-    	bearing: bearingAngle
+    		bearing: bearingAngle
   	});
   });
 
@@ -90,18 +85,22 @@ var bearingAngle = 0;
 
   function loadPath(data)
   {
+	var id = "route";
+	if (map.getLayer(id) != undefined) {
+		map.removeLayer(id);
+	}
+	if (map.getSource(id) != undefined) {
+		map.removeSource(id);
+	}
   	map.addLayer({
-          "id": "route",
+          "id": id,
           "type": "line",
           "source": {
               "type": "geojson",
               "data": {
                   "type": "Feature",
                   "properties": {},
-                  "geometry": {
-                      "type": "LineString",
-                      "coordinates": data
-                  }
+                  "geometry": data
               }
           },
           "layout": {
@@ -125,8 +124,15 @@ var bearingAngle = 0;
 
   function updateLocator(long, lat) // function to move gps point
   {
+        var id = "locator";
+        if (map.getLayer(id) != undefined) {
+                map.removeLayer(id);
+        }
+        if (map.getSource(id) != undefined) {
+                map.removeSource(id);
+        }
   	map.addLayer({
-              "id": "point",
+              "id": id,
               "type": "symbol",
               "source": {
                   "type": "geojson",
