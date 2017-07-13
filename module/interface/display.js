@@ -5,10 +5,10 @@ const url = require('url')
 let win
 
 function createWindow () {
-  win = new BrowserWindow({width: 800, height: 600, frame: false, fullscreen: true})
+  win = new BrowserWindow({width: 800, height: 480, frame: false, fullscreen: true})
 
   win.loadURL('http://localhost:3000')
-
+  win.webContents.openDevTools()
   win.on('closed', () => {
 
     win = null

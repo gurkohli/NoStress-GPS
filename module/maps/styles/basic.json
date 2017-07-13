@@ -19,7 +19,7 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "http://192.168.0.5:8080/data/v3.json"
+      "url": "http://localhost:8080/data/v3.json"
     }
   },
   "glyphs": "{fontstack}/{range}.pbf",

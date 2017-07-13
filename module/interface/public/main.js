@@ -22,7 +22,7 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
   var map = new mapboxgl.Map({
       container: 'map', // container id
-      style: 'http://192.168.0.5:8080/styles/nostress.json', //stylesheet location
+      style: 'http://localhost:8080/styles/nostress.json', //stylesheet location
       center: [-123.10, 49.2811], // starting position
       zoom: zoomLevelGlobal, // starting zoom
       pitch: pitchAngle,

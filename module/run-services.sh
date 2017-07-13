@@ -68,8 +68,20 @@ echo "All Services Successfully Started!"
 echo
 
 # Start Display
-echo "Starting Display : Soon :D"
+echo "Starting Display"
 echo
+
+mate-terminal -e "electron display.js --enable-webgl --ignore-gpu-blacklist"
+
+until pgrep -f "node /usr/local/bin/electron display.js --enable-webgl --ignore-gpu-blacklist"
+do
+  sleep 0.1
+done
+
+PID_DISPLAY=$(pgrep -f "node /usr/local/bin/electron display.js --enable-webgl --ignore-gpu-blacklist")
+
+echo "----Display PID = $PID_DISPLAY"
+echo 
 
 echo "Module Loaded"
 
@@ -94,12 +106,13 @@ function kill_everything {
 	sudo kill $PID_MAPS
 	sudo kill $PID_ROUTING
 	sudo kill $PID_INTERFACE
-	sudo kill $PID_GPS 
+	sudo kill $PID_GPS
+	pkill "electron" & pkill "electron"
 }
 
 trap kill_everything SIGHUP SIGINT SIGTERM
 
-while (sudo kill -0 $PID_BLUETOOTH && sudo kill -0 $PID_MAPS && sudo kill -0 $PID_ROUTING && sudo kill -0 $PID_INTERFACE && sudo kill -0 $PID_GPS)
+while (sudo kill -0 $PID_BLUETOOTH && sudo kill -0 $PID_MAPS && sudo kill -0 $PID_ROUTING && sudo kill -0 $PID_INTERFACE && sudo kill -0 $PID_GPS && (pgrep -f "node /usr/local/bin/electron display.js" > /dev/null 2>&1) && (pgrep -f "electron" > /dev/null 2>&1))
 do
 	sleep 1
 done
