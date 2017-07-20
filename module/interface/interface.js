@@ -4,7 +4,10 @@ const app = express();
 const http = require('http').Server(app);
 const io =  require('socket.io')(http);
 const port = 3000;
+const Helper = require('./helpers.js');
 
+
+var interfaceHelper = new Helper();
 var isConnected  = false;
 var client = null;
 
@@ -15,19 +18,30 @@ app.use(bodyParser.json())
 
 app.post('/routing', function(req, res) {
   var data = req.body;
-  if (isConnected && client) {
-    client.emit('routing', data);
+  console.log(data)
+  if (data.source != undefined && data.destination != undefined) {
+    var points = [data.source, data.destination];
+    interfaceHelper.getRoute(points, function(err, response, body) {
+	if (!err && res.statusCode == 200) {
+	  if (isConnected && client) {
+            client.emit('routing', JSON.parse(body));
+	  }
+     	  console.log("Recieved POST from Routing")
+          res.send("SUCCESS")
+	} else {
+	  res.send("ROUTING_ERROR");
+	}
+    });
+  } else {
+    console.log("[ERROR] Recieved Bad Data from Routing")
+    res.send("BAD DATA")
   }
-  console.log("Recieved POST from Routing")
-  res.send("ACK")
 })
- 
+
 app.post('/gps', function(req, res) {
   var data = req.body;
   if (isConnected && client)
   {
-  	data = [ parseFloat(data[0]), parseFloat(data[1]) ];
-  	//console.log(data);
     client.emit('gps', data);
   }
   console.log("Recieved POST from GPS")
