@@ -20,7 +20,7 @@ while True:
 
 headers={'Content-type' : 'application/json'}
 serial_port = '/dev/ttyS0';
-baud_rate = 9600; #In arduino, Serial.begin(baud_rate)
+baud_rate = 9600; #9600: In arduino, Serial.begin(baud_rate)
 GPS=[0,1,2]
 ser = serial.Serial(serial_port, baud_rate)
 while True:

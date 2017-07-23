@@ -4,7 +4,7 @@ var bleno = require('bleno');
 var BlenoPrimaryService = bleno.PrimaryService;
 
 var EchoCharacteristic = require('./src/characteristic');
-
+var ButtonCharacteristics = require('./src/buttons');
 
 // Callbacks
 
@@ -20,9 +20,24 @@ function routingCallback(data) {
   }, function(err, response, body) {
     console.log(body)
   })
-  console.log("Sending POST data to Interface")
+  console.log("Routing: Sending POST data to Interface")
 }
 
+function buttonsCallback(data) {
+  console.log(data)
+  // request({
+  //   url: "http://localhost:3000/buttonconfig",
+  //   method: "POST",
+  //   json: true,
+  //   headers: {
+  //     "content-type": "application/json",
+  //   },
+  //   body: JSON.parse(data)
+  // }, function(err, response, body) {
+  //   console.log(body)
+  // })
+  // console.log("Buttons: Sending POST data to Interface")
+}
 // Main
 
 console.log("Starting Bluetooth Module");
@@ -45,7 +60,8 @@ bleno.on('advertisingStart', function(error) {
       new BlenoPrimaryService({
         uuid: '526f7574696e6753657276696365ffff',
         characteristics: [
-          new EchoCharacteristic(routingCallback)
+          new EchoCharacteristic(routingCallback),
+          new ButtonCharacteristics(buttonsCallback)
         ]
       })
     ]);

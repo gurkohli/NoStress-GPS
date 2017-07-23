@@ -5,15 +5,21 @@ const http = require('http').Server(app);
 const io =  require('socket.io')(http);
 const port = 3000;
 const Helper = require('./helpers.js');
-
+const fs = require('fs')
 
 var interfaceHelper = new Helper();
 var isConnected  = false;
 var client = null;
+var gpsLocation;
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json())
 
+// read JSON
+
+var data = fs.readFileSync('favLoc.json', 'utf8');
+var favLoc = JSON.parse(data);
+//console.log(favLoc.favloc[0]);
 // Connections
 
 app.post('/routing', function(req, res) {
@@ -38,8 +44,38 @@ app.post('/routing', function(req, res) {
   }
 })
 
+app.post('/button', function(req, res) {
+  var data = req.body;
+  console.log(data.Bnum, favLoc, favLoc.favloc)
+  if (isConnected && client)
+  {
+    console.log(data)
+
+    source = gpsLocation;
+    //console.log(data.Bnum, favLoc, favLoc.favloc)
+    dest = [favLoc.favloc[data.Bnum].lat, favLoc.favloc[data.Bnum].long]; // check here
+    var points = [source, dest]; 
+    
+    if (source != undefined && dest != undefined)
+    {
+    	interfaceHelper.getRoute(points, function(err, response, body) {
+		if (!err && response.statusCode == 200) {
+	  	    if (isConnected && client) {
+            client.emit('routing', JSON.parse(body));
+	  	}
+     	    console.log("Recieved POST from Routing")
+		} 
+    	});
+  	}
+    console.log("Recieved POST from Button")
+    res.send("ACK")
+ }
+})
+
 app.post('/gps', function(req, res) {
   var data = req.body;
+  gpsLocation = [ data[1], data[0] ];
+  console.log(gpsLocation);
   if (isConnected && client)
   {
     client.emit('gps', data);

@@ -6,7 +6,19 @@
     <script src='lib/mapbox-gl.js'></script>
     <link href='lib/mapbox-gl.css' rel='stylesheet' />
 	<style>
-		body {margin: 0; padding: 0}
+		body {margin: 0; padding: 0; overflow: hidden}
+		.ui {     display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: xx-large;
+    border-radius: 5px;
+    color: rgb(57,255,120);
+    font-family: futura;
+    font-weight: 500;
+    letter-spacing: 2px;
+    background-color: rgba(0,0,0,0.7) !important;
+		}
+		.none {display:none !important;}
 		#overlay {text-align: center;}
 		#map {position: absolute; top:0; bottom:0; width: 100%}
 		#eta {width: 150px; height: 70px; left: 5%; top: 5%; position: absolute; background-color: blue;}
@@ -19,6 +31,7 @@
 
 		#next-turn-container {width: 200px; height: 70px; right: 5%; top: 5%; position: absolute;}
 		#next-turn-direction {width: 40%; height: 100%; float:left; background-color: brown;}
+		#next-turn-direction-image {width:100%;}
 		#next-turn-details-container{width: 60%; height: 100%; float:right;}
 		#next-turn-distance {width: 100%; height: 50%; background-color: blue;}
 		#next-turn-street-name {width: 100%; height: 50%; background-color: green;}
@@ -27,14 +40,16 @@
 <body ng-controller="InterfaceController">
 	<div id='map'></div>
 	<div id="overlay">
-		<div id='eta'>{{ETA}}</div>
-		<div id="lane-container"><div id="lanes">Lane information</div></div>
-		<div id="street-name-container"><div id="street-name">{{currentStreetName}}</div></div>
+		<div id='eta' class="ui" ng-hide="ETA == undefined || ETA == ''" ng-bind="ETA">{{ETA}}</div>
+		<div id="lane-container"><div id="lanes" ng-hide="instruction == undefined || instruction == ''" class="ui" ng-bind="instruction">{{instruction}}</div></div>
+		<div id="street-name-container"><div id="street-name" ng-hide="currentStreetName == undefined || currentStreetName == ''" class="ui" ng-bind="currentStreetName">{{currentStreetName}}</div></div>
 		<div id="next-turn-container">
-				<div id="next-turn-direction">Direction of turn</div>
+				<div id="next-turn-direction" class="ui" ng-hide="nextTurnDirection == undefined || nextTurnDirection == ''">
+						<img id="next-turn-direction-image" ng-src="{{nextTurnDirection}}"/>
+				</div>
 				<div id="next-turn-details-container">
-						<div id="next-turn-distance">{{nextTurnDistance}}</div>
-						<div id="next-turn-street-name">{{nextTurnStreet}}</div>
+						<div id="next-turn-distance" class="ui" ng-hide="nextTurnDistance == undefined || nextTurnDistance == ''" ng-bind="nextTurnDistance">{{nextTurnDistance}}</div>
+						<div id="next-turn-street-name" class="ui" ng-hide="nextTurnStreet == undefined || nextTurnStreet == ''" ng-bind="nextTurnStreet">{{nextTurnStreet}}</div>
 
 				</div>
 		</div>
