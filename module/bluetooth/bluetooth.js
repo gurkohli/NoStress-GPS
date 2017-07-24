@@ -5,6 +5,7 @@ var BlenoPrimaryService = bleno.PrimaryService;
 
 var EchoCharacteristic = require('./src/characteristic');
 var ButtonCharacteristics = require('./src/buttons');
+var SettingsCharacteristic = require('./src/settings');
 
 // Callbacks
 
@@ -25,18 +26,34 @@ function routingCallback(data) {
 
 function buttonsCallback(data) {
   console.log(data)
-  // request({
-  //   url: "http://localhost:3000/buttonconfig",
-  //   method: "POST",
-  //   json: true,
-  //   headers: {
-  //     "content-type": "application/json",
-  //   },
-  //   body: JSON.parse(data)
-  // }, function(err, response, body) {
-  //   console.log(body)
-  // })
-  // console.log("Buttons: Sending POST data to Interface")
+  request({
+    url: "http://localhost:3000/buttonconfig",
+    method: "POST",
+    json: true,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.parse(data)
+  }, function(err, response, body) {
+    console.log(body)
+  })
+  console.log("Buttons: Sending POST data to Interface")
+}
+
+function SettingsCallback(data) {
+  console.log(data)
+  request({
+    url: "http://localhost:3000/settings",
+    method: "POST",
+    json: true,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.parse(data)
+  }, function(err, response, body) {
+    console.log(body)
+  })
+  console.log("Settings: Sending POST data to Interface")
 }
 // Main
 
@@ -61,7 +78,8 @@ bleno.on('advertisingStart', function(error) {
         uuid: '526f7574696e6753657276696365ffff',
         characteristics: [
           new EchoCharacteristic(routingCallback),
-          new ButtonCharacteristics(buttonsCallback)
+          new ButtonCharacteristics(buttonsCallback),
+          new SettingsCharacteristic(SettingsCallback)
         ]
       })
     ]);

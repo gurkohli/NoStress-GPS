@@ -21,6 +21,8 @@ var base64 = require('base-64');
 
 var pako = require('pako');
 
+var GEOLOCATION = navigator.geolocation;
+
 var PAYLOAD_END = "FFFFFFFF";
 
 export default class RootPage extends Component {
@@ -29,13 +31,22 @@ export default class RootPage extends Component {
     this._ROUTINGSERVICE = "routing"
     this._ROUTINGSERVICEDATA = "data"
     this._moduleIdentifier = "FB49F2AC-8406-43D9-B0DA-B11C65EEDF72"
-    //this._moduleIdentifier = "3A85A35E-419E-EC6A-C1C2-E9EEBEB19A7A" // Macbook
+    this._SERVICE = "service"
+
+    this._ROUTINGSERVICEDATA = "routing"
+    this._BUTTONSERVICEDATA = "buttons"
+    this._SETTINGSSERVICEDATA = "settings"
+
+    //this._moduleIdentifier = "AE887EB0-87D3-89B6-C600-F15F609347D8"
+    this._moduleIdentifier = "3A85A35E-419E-EC6A-C1C2-E9EEBEB19A7A" // Macbook
     this._moduleName = "raspberrypi"
     this._moduleServices = {
-        routing: {
-          uuid:   "526F7574-696E-6753-6572-76696365FFFF", //"RoutingService" in hex + 'ffff'
+        service: {
+          uuid:   "526f7574-696E-6753-6572-76696365FFFF", //"RoutingService" in hex + 'ffff'
           characteristics: {
-            data: "526F7574-696E-6753-6572-766963654331" //"RoutingServiceC1" in hex
+            routing:  "526F7574-696E-6753-6572-766963654331", //"RoutingServiceC1" in hex
+            buttons:  "50726F67-7261-6D6D-6162-6C6542754331",
+            settings: "53657474-696E-6773-4331-FFFFFFFFFFFF"
           }
         }
     }
@@ -47,21 +58,23 @@ export default class RootPage extends Component {
       blePeripheralInfo: {},
       destinationInputValue: '',
       programmableButtons: [
-        {isActive: true, value: null}, // Set true for testing. TODO Change to false
-        {isActive: true, value: null},
+        {isActive: false, value: null}, // Set true for testing. TODO Change to false
+        {isActive: false, value: null},
         {isActive: false, value: null},
         {isActive: false, value: null},
         {isActive: false, value: null}
       ],
       bleConnectionStatus: 0, //0: Not Connected, 1: Connecting, 2: Connected
       isSettingsModalVisible: false, // Setting true for testing.
+      isButtonConfirmationVisible: false,
+      isBluetoothOffVisible: false,
       settings: [
         {text: "Display Units", value: 0, options: ["km", "miles"], optionsLength: 2},
         {text: "Check for Firmware Updates",
           value: false, optionsLength: 1,
           isModal: true,
           states: {
-            currentState: 2,
+            currentState: 1,
             requireConfirmation: true,
             text:["Checking for updates...", "Update not found", "Update found!"],
             confirmationPrompts:["Cancel","Update"],
@@ -80,19 +93,20 @@ export default class RootPage extends Component {
         }
       ]
     }
-
+  this.connectToModule()
+  this.scanning = setInterval(() => this.connectToModule(), 3000);
+  this.checkState = setInterval(() => BleManager.checkState(), 1000);
   }
+
 
   connectToModule() {
     BleManager.isPeripheralConnected(this._moduleIdentifier, [])
       .then((isConnected) => {
-        if (isConnected) {
-          this.setState({bleConnectionStatus: 2})
-        } else {
+        if (!isConnected && this.state.bleConnectionStatus != 1 && this.state.bleConnectionStatus != 2) {
           this.setState({bleConnectionStatus: 0})
-          BleManager.scan([], 10, true).then(()=>console.debug("Scan Started"))
+          BleManager.scan([], 3, false).then(()=>console.debug("Scan Started"));
         }
-      })
+      });
   }
 
   writeToModule(serviceName, characteristicName, data) {
@@ -134,21 +148,47 @@ export default class RootPage extends Component {
     this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(this);
 
     NativeAppEventEmitter.addListener('BleManagerDiscoverPeripheral', this.handleDiscoverPeripheral);
+    NativeAppEventEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectPeripheral.bind(this));
+    NativeAppEventEmitter.addListener('BleManagerDidUpdateState', this.handleUpdateState.bind(this))
+  }
+
+  handleUpdateState(arg) {
+    var state = arg.state
+    if (state == "off") {
+      if (this.state.isBluetoothOffVisible != true) {
+        this.setState({bleConnectionStatus: 0})
+        this.setState({isBluetoothOffVisible: true})
+      }
+    } else {
+      if (this.state.isBluetoothOffVisible == true) {
+        this.handleDisconnectPeripheral();
+      }
+      this.setState({isBluetoothOffVisible: false})
+    }
+  }
+
+  handleDisconnectPeripheral(arg) {
+    this.setState({bleConnectionStatus: 0})
+    this.connectToModule()
+    this.scanning = setInterval(() => this.connectToModule(), 3000);
   }
 
   handleDiscoverPeripheral(data) {
     if (data.id == this._moduleIdentifier || data.name == this._moduleName) {
       BleManager.stopScan()
-      this.setState({bleConnectionStatus: 1});
-      BleManager.connect(this._moduleIdentifier)
-          .then((peripheralInfo)=>{
-            this.setState({bleConnectionStatus: 2, blePeripheralInfo: peripheralInfo})
-            console.log(peripheralInfo)
-          })
-          .catch((error)=>{
-            console.log(error);
-            this.setState({bleConnectionStatus: 0})
-          })
+      if (this.state.bleConnectionStatus == 0) {
+        this.setState({bleConnectionStatus: 1});
+        BleManager.connect(this._moduleIdentifier)
+            .then((peripheralInfo)=>{
+              clearInterval(this.scanning)
+              this.setState({bleConnectionStatus: 2, blePeripheralInfo: peripheralInfo})
+              console.log(peripheralInfo)
+            })
+            .catch((error)=>{
+              console.log(error);
+              this.setState({bleConnectionStatus: 0})
+            })
+      }
     }
     console.log('Got ble data', data);
     this.setState({ble: data})
@@ -185,10 +225,16 @@ export default class RootPage extends Component {
   destinationEntered() {
     this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{
       console.log(response)
-      var source=["49.276745","-122.9177736"];
-      var destination = [response[0].lat, response[0].lon];
-      var routes;
-      this.writeToModule(this._ROUTINGSERVICE, this._ROUTINGSERVICEDATA, {source: source, destination: destination})
+      GEOLOCATION.getCurrentPosition(function(position) {
+        var crd = position.coords;
+        var source=[crd.latitude,crd.longitude];
+        var destination = [response[0].lat, response[0].lon];
+        var routes;
+        this.writeToModule(this._SERVICE, this._ROUTINGSERVICEDATA, {source: source, destination: destination})
+      }.bind(this), function(error) {
+        //Something went wrong.
+        console.error("Can't get iphone location")
+      })
     }).catch((error)=>{
       console.log(error)
     })
@@ -196,21 +242,44 @@ export default class RootPage extends Component {
   }
 
   handleProgrammableButtonClicked(index) {
-    // Testing only!
-    if (this.state.bleConnectionStatus == 0) {
-      this.connectToModule()
-    } else {
-      BleManager.disconnect(this._moduleIdentifier)
-        .then(()=>{
-          this.setState({bleConnectionStatus: 0})
-        })
+    if (this.state.destinationInputValue) {
+      this.buttonBuffer = index + 1;
+      this.setState({isButtonConfirmationVisible: true})
     }
+  }
+
+  buttonProgrammed(confirmed) {
+    if (confirmed == true) {
+      this.APIService.geocodingSearch(this.state.destinationInputValue).then((response)=>{
+        var destination = [response[0].lat, response[0].lon];
+        this.writeToModule(this._SERVICE, this._BUTTONSERVICEDATA, {key: this.buttonBuffer, value: destination})
+
+        var buttonArray = this.state.programmableButtons;
+        buttonArray[this.buttonBuffer-1].isActive = true;
+        buttonArray[this.buttonBuffer-1].value = destination;
+        this.setState({programmableButtons: buttonArray})
+        this.buttonBuffer = undefined;
+      }).catch((error)=>{
+        console.log(error)
+      })
+    } else {
+      this.buttonBuffer = undefined;
+    }
+
+    this.setState({isButtonConfirmationVisible: false})
   }
 
   updateSettings(index, value) {
     var settings = this.state.settings;
     settings[index].value = value;
     this.setState({settings: settings})
+
+    var payload = {
+      units: settings[0].options[settings[0].value]
+    }
+
+    this.writeToModule(this._SERVICE, this._SETTINGSSERVICEDATA, payload)
+
   }
 
   render() {
@@ -242,7 +311,7 @@ export default class RootPage extends Component {
           borderColor: 'black'
         }
       })
-      return <TouchableOpacity key={index} onPress={() => this.handleProgrammableButtonClicked()} style ={nodeStyle.programmableButton}>
+      return <TouchableOpacity key={index} onPress={() => {this.handleProgrammableButtonClicked(index)}} style ={nodeStyle.programmableButton}>
               <Image source={require('./assets/images/button.png')} style={nodeStyle.programmableButtonIcon}/>
             </TouchableOpacity>
     }.bind(this));
@@ -370,7 +439,7 @@ export default class RootPage extends Component {
             </TouchableOpacity>
           </View>
           <View style={styles.main}>
-            <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} onEndEditing={()=>this.destinationEntered()} style={styles.destinationInput} value={this.state.destinationInputValue}/>
+            <TextInput placeholder='Where would you like to go?' onChangeText={(text)=>this.setState({destinationInputValue:text})} style={styles.destinationInput} value={this.state.destinationInputValue}/>
             <TouchableOpacity onPress={()=>this.destinationEntered()} style ={styles.goButton}>
               <Image source={require('./assets/images/go.png')} style={styles.goIcon}/>
             </TouchableOpacity>
@@ -393,15 +462,55 @@ export default class RootPage extends Component {
               </TouchableWithoutFeedback>
             </TouchableOpacity>
           </Modal>
+          <Modal
+              animationType={"fade"}
+              transparent={true}
+              visible={this.state.isButtonConfirmationVisible}>
+                <TouchableOpacity focusedOpacity={0.3} activeOpacity={0.3} style={styles.containerTranslucent}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.settingsModalItemModalItem}>
+                      <View style={styles.settingsModalItemModalLabelContainer}>
+                        <Text style={styles.settingsModalItemModalLabel}>Program Button {this.buttonBuffer}</Text>
+                      </View>
+                      <View style={styles.settingsModalItemModalStateTextContainer}>
+                        <Text style={styles.settingsModalItemModalStateText}> Are you sure you wish to program the location {this.state.destinationInputValue} to Button {this.buttonBuffer}</Text>
+                      </View>
+                      <View style={styles.settingsModalItemModalStateButtonContainer}>
+                        <View style={{padding:5}}></View>
+                        <TouchableOpacity style={[styles.settingsModalItemModalStateButton,{width: "45%"}]} onPress={() =>this.buttonProgrammed(false)}>
+                          <Text style={[styles.textOnWhiteBg, {color: 'red'}]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <View style={{padding:7}}></View>
+                        <TouchableOpacity style={[styles.settingsModalItemModalStateButton,{width: "45%"}]} onPress={() =>this.buttonProgrammed(true)}>
+                          <Text style={styles.textOnWhiteBg}>Confirm</Text>
+                        </TouchableOpacity>
+                        <View style={{padding:5}}></View>
+                      </View>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </TouchableOpacity>
+          </Modal>
+
+          <Modal
+              animationType={"fade"}
+              transparent={true}
+              visible={this.state.isBluetoothOffVisible}>
+                <TouchableOpacity focusedOpacity={0.3} activeOpacity={0.3} style={styles.containerTranslucent}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.settingsModalItemModalItem}>
+                      <View style={styles.settingsModalItemModalLabelContainer}>
+                        <Text style={styles.settingsModalItemModalLabel}>Bluetooth OFF</Text>
+                      </View>
+                      <View style={styles.settingsModalItemModalStateTextContainer}>
+                        <Text style={styles.settingsModalItemModalStateText}> iPhone bluetooth is currently off. Please enable bluetooth in Settings -> Bluetooth or through Control Centre </Text>
+                      </View>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </TouchableOpacity>
+          </Modal>
         </View>
       </TouchableWithoutFeedback>
-      // <View style={styles.container}>
-      //   <TouchableHighlight style={{padding:20, backgroundColor:'#ccc'}} onPress={() => this.toggleScanning(!this.state.scanning) }>
-      //       <Text>Scan Bluetooth ({this.state.scanning ? 'on' : 'off'})</Text>
-      //   </TouchableHighlight>
 
-      //   {bleList}
-      // </View>
     );
   }
 }

@@ -5,6 +5,7 @@ app.controller("InterfaceController", function InterfaceController($scope) {
 
   // Initialization
   var currentRoute = {};
+  var settings = {};
   currentRoute.active = false;
   var lastGPSLocation;
   var lastVelocity;
@@ -98,6 +99,10 @@ app.controller("InterfaceController", function InterfaceController($scope) {
   		zoomLevelGlobal = ZOOM_LEVEL_SLOW;
   	}
 
+  });
+
+  socket.on('settings', function(data) {
+    settings = data;
   });
 
   function loadPath(data)
@@ -259,11 +264,16 @@ app.controller("InterfaceController", function InterfaceController($scope) {
   function setNextTurnDistance(value) {
     var distanceRaw = value / 1000;
     var distanceParsed = distanceRaw.toPrecision(2);
-    var units = "km"
-    if (distanceParsed < 1) {
-      distanceParsed = distanceParsed * 1000
-      units = "m"
+    var units = (settings && settings.units) || "km"
+    if (units == "km") {
+      if (distanceParsed < 1) {
+        distanceParsed = distanceParsed * 1000
+        units = "m"
+      }
+    } else {
+      distanceParsed = distanceParsed * 0.621371;
     }
+
     currentRoute.nextTurnDistance = value;
     $scope.nextTurnDistance = distanceParsed + " " + units;
   }

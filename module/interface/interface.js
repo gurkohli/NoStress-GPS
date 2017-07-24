@@ -17,9 +17,8 @@ app.use(bodyParser.json())
 
 // read JSON
 
-var data = fs.readFileSync('favLoc.json', 'utf8');
-var favLoc = JSON.parse(data);
-//console.log(favLoc.favloc[0]);
+var buttons = getButtons();
+
 // Connections
 
 app.post('/routing', function(req, res) {
@@ -46,36 +45,33 @@ app.post('/routing', function(req, res) {
 
 app.post('/button', function(req, res) {
   var data = req.body;
-  console.log(data.Bnum, favLoc, favLoc.favloc)
-  if (isConnected && client)
-  {
+
+  if (isConnected && client) {
     console.log(data)
 
     source = gpsLocation;
-    //console.log(data.Bnum, favLoc, favLoc.favloc)
-    dest = [favLoc.favloc[data.Bnum].lat, favLoc.favloc[data.Bnum].long]; // check here
-    var points = [source, dest]; 
-    
-    if (source != undefined && dest != undefined)
-    {
-    	interfaceHelper.getRoute(points, function(err, response, body) {
-		if (!err && response.statusCode == 200) {
-	  	    if (isConnected && client) {
-            client.emit('routing', JSON.parse(body));
-	  	}
-     	    console.log("Recieved POST from Routing")
-		} 
+    dest = [buttons[data.Bnum].lat, buttons[data.Bnum].long]; // check here
+    var points = [source, dest];
+
+    if (source != undefined && dest != undefined) {
+      interfaceHelper.getRoute(points, function(err, response, body) {
+		      if (!err && response.statusCode == 200) {
+    	  	    if (isConnected && client) {
+                client.emit('routing', JSON.parse(body));
+    	  	    }
+     	        console.log("Recieved POST from Routing")
+		      }
     	});
   	}
     console.log("Recieved POST from Button")
     res.send("ACK")
- }
+  }
 })
 
 app.post('/gps', function(req, res) {
   var data = req.body;
-  gpsLocation = [ data[1], data[0] ];
-  console.log(gpsLocation);
+  gpsLocation = [data[1], data[0]];
+
   if (isConnected && client)
   {
     client.emit('gps', data);
@@ -86,7 +82,7 @@ app.post('/gps', function(req, res) {
 
 app.post('/acc', function(req, res) {
   var data = req.body;
-  if (isConnected && client) 
+  if (isConnected && client)
   {
   	//console.log(data.data);
     client.emit('acc', data.data);
@@ -97,7 +93,7 @@ app.post('/acc', function(req, res) {
 
 app.post('/mag', function(req, res) {
   var data = req.body;
-  if (isConnected && client) 
+  if (isConnected && client)
   {
   	console.log(data);
   	data = [ parseInt(data[0]), parseInt(data[1]) ];
@@ -107,11 +103,57 @@ app.post('/mag', function(req, res) {
   res.send("ACK")
 })
 
+app.post('/buttonconfig', function(req, res) {
+  var data = req.body;
+
+  var buttonNo = data.key;
+  var value = data.value;
+
+  buttons[buttonNo-1].lat = value[0];
+  buttons[buttonNo-1].long = value[1];
+
+  setButtons(buttons);
+
+  console.log("Recieved POST from Buttons")
+  res.send("ACK")
+})
+
+app.post('/settings', function(req, res) {
+  var data = req.body;
+  if (isConnected && client)
+  {
+    client.emit('settings', data);
+  }
+  setSettings(data);
+  console.log("Recieved POST from Settings")
+  res.send("ACK")
+})
+
 // WebSocket
 
 function onConnection(socket) {
  	isConnected = true;
 	client = socket
+
+  client.emit('settings', getSettings());
+}
+
+function getSettings() {
+    var data = fs.readFileSync('settings.json', 'utf8');
+    return data
+}
+
+function setSettings(data) {
+    fs.writeFileSync('settings.json', data, 'utf8');
+}
+
+function getButtons() {
+  var data = fs.readFileSync('buttons.json', 'utf8');
+  return data;
+}
+
+function setButtons(data) {
+  fs.writeFileSync('buttons.json', 'utf8');
 }
 
 io.on('connection', onConnection);
